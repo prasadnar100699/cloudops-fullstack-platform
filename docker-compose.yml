@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+
+  frontend:
+    image: prasad/frontend:latest
+    restart: always
+    networks: [appnet]
+
+  backend:
+    image: prasad/backend:latest
+    restart: always
+    env_file: .env
+    depends_on: [db]
+    networks: [appnet]
+
+  db:
+    image: postgres:15
+    env_file: .env
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks: [appnet]
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    depends_on: [frontend, backend]
+    networks: [appnet]
+
+networks:
+  appnet:
+
+volumes:
+  dbdata:
